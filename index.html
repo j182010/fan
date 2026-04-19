@@ -316,6 +316,18 @@
 </div>
 
 <script>
+// 检测是否在微信内置浏览器
+function isWeixin(){
+  var ua = navigator.userAgent.toLowerCase();
+  return ua.indexOf('micromessenger') !== -1;
+}
+if(isWeixin()){
+  alert('微信内无法打开，请复制链接到浏览器访问');
+  // 也可以跳转到提示页
+}
+</script>
+
+<script>
     (function() {
         // ---------- DOM 元素 ----------
         const canvas = document.getElementById('fanCanvas');
@@ -658,7 +670,7 @@
                 drawBlade(angleDeg, i);
             }
             
-            // 4. 网罩 + 中央可爱表情
+            
             drawFanCageAndFace();
             
             // 5. 动态光效和吹风效果
