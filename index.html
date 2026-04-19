@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>儿童卡通风扇 - 快乐转转转</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 避免儿童拖动时选中文字，提升体验 */
+        }
+
+        body {
+            background: linear-gradient(145deg, #b8e1fc 0%, #d9f0ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Chalkboard', 'Segoe UI Emoji', 'Segoe UI', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 主卡片 */
+        .fan-card {
+            background-color: #ffe9c7;
+            border-radius: 80px 80px 60px 60px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255, 255, 200, 0.8);
+            padding: 25px 30px 35px;
+            text-align: center;
+            transition: all 0.2s ease;
+            border: 4px solid #ffb347;
+            max-width: 750px;
+            width: 100%;
+        }
+
+        /* 标题区 */
+        .title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ff6b3d;
+            text-shadow: 3px 3px 0 #ffdd99;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .title span {
+            background: #fff0bb;
+            border-radius: 60px;
+            padding: 0 20px;
+            display: inline-block;
+        }
+        .title-emoji {
+            font-size: 2rem;
+        }
+
+        /* canvas 风扇绘图区 */
+        .canvas-area {
+            background: #fef1cf;
+            border-radius: 60px;
+            padding: 15px;
+            margin: 15px 0 10px;
+            box-shadow: inset 0 0 0 3px white, 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #fef5e0;
+            border-radius: 50px;
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: #ffefcf;
+            border-radius: 55px;
+            padding: 20px 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            border: 2px solid #ffc97a;
+        }
+
+        /* 开关容器 (可爱拨动开关) */
+        .switch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: #fff2e0;
+            padding: 8px 18px;
+            border-radius: 50px;
+            box-shadow: inset 0 1px 3px #ffe0b5, 0 5px 8px rgba(0,0,0,0.05);
+        }
+        .switch-label {
+            font-weight: bold;
+            color: #d47c2c;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* 自定义toggle开关 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 40px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ffaa77;
+            transition: 0.3s;
+            border-radius: 40px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .slider-round:before {
+            position: absolute;
+            content: "❄️";
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            width: 32px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #fff9ea;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #39a0ff;
+        }
+        input:checked + .slider-round {
+            background-color: #4caf7f;
+        }
+        input:checked + .slider-round:before {
+            content: "🌀";
+            transform: translateX(40px);
+            color: #ff884d;
+        }
+
+        /* 速度控制区 */
+        .speed-control {
+            flex: 2;
+            min-width: 180px;
+            background: #fff2e0;
+            border-radius: 50px;
+            padding: 10px 18px;
+            box-shadow: inset 0 1px 3px #ffe0b5, 0 5px 8px rgba(0,0,0,0.05);
+        }
+        .speed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #d47c2c;
+        }
+        .speed-header span:first-child {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .speed-value {
+            background: #ffe2b5;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #b95f1a;
+        }
+        input[type=range] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #ffcf8e;
+            border-radius: 10px;
+            outline: none;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 26px;
+            height: 26px;
+            background: #ff914d;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #ff6b3d;
+        }
+        .speed-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.7rem;
+            color: #b97f48;
+            font-weight: bold;
+        }
+
+        /* 状态提示 */
+        .fan-status {
+            background: #ffe1b3;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            color: #b6450e;
+            box-shadow: inset 0 1px 2px #ffc480, 0 3px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 小装饰 */
+        .deco-text {
+            margin-top: 18px;
+            font-size: 0.9rem;
+            color: #ffac62;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        button, .toggle-switch, input[type=range] {
+            cursor: pointer;
+        }
+        .disabled-slider {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        @media (max-width: 550px) {
+            .fan-card {
+                padding: 15px 18px 25px;
+            }
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .speed-control {
+                width: 100%;
+            }
+            .title {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="fan-card">
+    <div class="title">
+        <span>🐼 呼呼风扇乐园 🐨</span>
+        <div class="title-emoji">🌀</div>
+    </div>
+    <div class="canvas-area">
+        <canvas id="fanCanvas" width="600" height="500" style="width:100%; height:auto; max-width:600px; aspect-ratio:600/500"></canvas>
+    </div>
+    
+    <div class="control-panel">
+        <!-- 可爱的开关区 -->
+        <div class="switch-container">
+            <div class="switch-label">
+                <span>🔛 开关</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="powerSwitch">
+                <span class="slider-round"></span>
+            </label>
+            <div class="fan-status" id="statusText">
+                ⚪ 已关闭
+            </div>
+        </div>
+
+        <!-- 速度调节区 -->
+        <div class="speed-control" id="speedControlArea">
+            <div class="speed-header">
+                <span>⚡ 旋转速度 🌀</span>
+                <span class="speed-value" id="speedDisplay">中速 · 3</span>
+            </div>
+            <input type="range" id="speedSlider" min="1" max="10" step="1" value="3" disabled>
+            <div class="speed-labels">
+                <span>🐢 慢悠悠</span>
+                <span>🐇 超快转</span>
+            </div>
+        </div>
+    </div>
+    <div class="deco-text">
+        💨 按下开关，凉风吹吹！  💨
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- DOM 元素 ----------
+        const canvas = document.getElementById('fanCanvas');
+        const ctx = canvas.getContext('2d');
+        const powerSwitch = document.getElementById('powerSwitch');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const statusTextSpan = document.getElementById('statusText');
+        
+        // 风扇参数
+        let isOn = false;               // 开关状态
+        let currentAngle = 0;          // 当前叶片旋转角度 (度)
+        let animationFrameId = null;
+        
+        // 速度映射: 滑块值1~10 => 每帧旋转角度增量 (度/帧)  保证最低0.3度/帧，最快6度/帧，60帧大约 18~360度/秒 有趣且不晕
+        // 为了儿童视觉舒适，最快约2圈/秒以下
+        const getDeltaAngle = (speedVal) => {
+            // 1 -> 0.3度/帧  (约18度/秒 = 0.05圈/秒 很慢)
+            // 5 -> 2.5度/帧 (150度/秒 = 0.42圈/秒)
+            // 10-> 5.5度/帧 (330度/秒 = 0.92圈/秒) 快乐旋转不眩晕
+            return 0.3 + (speedVal - 1) * (5.2 / 9);
+        };
+        
+        let currentSpeed = 3;          // 默认速度3
+        let currentDelta = getDeltaAngle(3);  // 初始增量
+        
+        // 更新速度显示和滑块样式
+        function updateSpeedUI() {
+            speedSlider.value = currentSpeed;
+            // 显示可爱文案
+            let speedText = '';
+            if (currentSpeed <= 2) speedText = '🐢 慢吞吞';
+            else if (currentSpeed <= 4) speedText = '😊 轻柔风';
+            else if (currentSpeed <= 7) speedText = '⚡ 呼呼转';
+            else speedText = '💨 龙卷风';
+            speedDisplay.innerText = `${speedText} · ${currentSpeed}`;
+            currentDelta = getDeltaAngle(currentSpeed);
+        }
+        
+        // 开关联动禁用/启用滑块
+        function toggleControlEnable() {
+            if (isOn) {
+                speedSlider.disabled = false;
+                speedControlArea.classList.remove('disabled-slider');
+                statusTextSpan.innerHTML = '🌬️ 风扇转转 · 呼呼 🌬️';
+                statusTextSpan.style.background = "#c8e6b5";
+                statusTextSpan.style.color = "#2c6e2c";
+            } else {
+                speedSlider.disabled = true;
+                speedControlArea.classList.add('disabled-slider');
+                statusTextSpan.innerHTML = '⏹️ 风扇休息中 ⏹️';
+                statusTextSpan.style.background = "#ffe1b3";
+                statusTextSpan.style.color = "#b6450e";
+            }
+        }
+        
+        // 监听开关变化
+        powerSwitch.addEventListener('change', (e) => {
+            isOn = e.target.checked;
+            toggleControlEnable();
+            // 如果打开并且没有动画，动画一直运行，这里只是改变旋转标志
+            // 如果关闭，角度不会再增加，叶片静止（不会额外操作）
+        });
+        
+        // 监听速度滑块变化
+        speedSlider.addEventListener('input', (e) => {
+            currentSpeed = parseInt(e.target.value, 10);
+            updateSpeedUI();
+        });
+        
+        // 初始化 UI 状态
+        updateSpeedUI();
+        toggleControlEnable();  // 初始开关为关闭
+        
+        // ---------- 绘制超可爱的卡通风扇（包含叶片、网罩、底座、笑脸）----------
+        // 所有坐标基于 canvas (600x500) 风扇中心 (300, 210)
+        const CENTER_X = 300;
+        const CENTER_Y = 210;
+        const FAN_RADIUS = 105;    // 外罩半径
+        
+        // 绘制底座 (可爱圆角梯形感觉)
+        function drawBase() {
+            ctx.save();
+            // 阴影让底座立体
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 3;
+            // 底座主形体
+            ctx.beginPath();
+            ctx.moveTo(220, 330);
+            ctx.quadraticCurveTo(300, 370, 380, 330);
+            ctx.lineTo(400, 380);
+            ctx.quadraticCurveTo(300, 405, 200, 380);
+            ctx.closePath();
+            ctx.fillStyle = "#FFC48A";
+            ctx.fill();
+            ctx.fillStyle = "#E5A35C";
+            ctx.beginPath();
+            ctx.ellipse(300, 335, 90, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#CD8B4A";
+            ctx.beginPath();
+            ctx.ellipse(300, 380, 95, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 装饰按钮
+            ctx.shadowBlur = 2;
+            ctx.beginPath();
+            ctx.arc(300, 365, 12, 0, Math.PI*2);
+            ctx.fillStyle = "#FFB347";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(300, 365, 6, 0, Math.PI*2);
+            ctx.fillStyle = "#FFE6B0";
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // 绘制单个叶片 (带旋转效果，通过整体ctx旋转)
+        function drawBlade(angleDeg, index) {
+            ctx.save();
+            // 旋转到对应方向 (整体偏移角度 + 叶片自身偏移角度)
+            // 三个叶片相差120度
+            const bladeOffset = index * 120;
+            const totalRotation = angleDeg + bladeOffset;
+            ctx.translate(CENTER_X, CENTER_Y);
+            ctx.rotate(totalRotation * Math.PI / 180);
+            ctx.translate(-CENTER_X, -CENTER_Y);
+            
+            // 绘制可爱胖叶片 (水滴形/椭圆变异)
+            const bladeX = CENTER_X;
+            const bladeY = CENTER_Y - 42;  // 叶片偏移中心距离
+            
+            ctx.beginPath();
+            // 叶片形状: 类似于胖水滴，圆润儿童感
+            ctx.moveTo(bladeX, bladeY - 10);
+            ctx.quadraticCurveTo(bladeX + 22, bladeY - 6, bladeX + 18, bladeY + 14);
+            ctx.quadraticCurveTo(bladeX + 10, bladeY + 24, bladeX, bladeY + 20);
+            ctx.quadraticCurveTo(bladeX - 10, bladeY + 24, bladeX - 18, bladeY + 14);
+            ctx.quadraticCurveTo(bladeX - 22, bladeY - 6, bladeX, bladeY - 10);
+            ctx.closePath();
+            
+            // 填充渐变让叶片更立体
+            const gradient = ctx.createLinearGradient(bladeX-8, bladeY-5, bladeX+12, bladeY+15);
+            gradient.addColorStop(0, "#FFD966");
+            gradient.addColorStop(1, "#FFA559");
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = "#E67E22";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // 叶片内高光
+            ctx.beginPath();
+            ctx.moveTo(bladeX-4, bladeY-2);
+            ctx.quadraticCurveTo(bladeX+2, bladeY+2, bladeX-2, bladeY+10);
+            ctx.strokeStyle = "#FFF2BF";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 绘制风扇网罩+装饰 + 中心可爱笑脸
+        function drawFanCageAndFace() {
+            ctx.save();
+            ctx.shadowBlur = 0;
+            // 外圈金属质感的网罩
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, FAN_RADIUS, 0, Math.PI * 2);
+            ctx.strokeStyle = "#FFB347";
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, FAN_RADIUS-6, 0, Math.PI * 2);
+            ctx.strokeStyle = "#FFD58C";
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            
+            // 放射状线条 (防护网)
+            for (let i = 0; i < 12; i++) {
+                const rad = (i * 30) * Math.PI / 180;
+                const x1 = CENTER_X + Math.cos(rad) * 20;
+                const y1 = CENTER_Y + Math.sin(rad) * 20;
+                const x2 = CENTER_X + Math.cos(rad) * (FAN_RADIUS - 5);
+                const y2 = CENTER_Y + Math.sin(rad) * (FAN_RADIUS - 5);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = "#FFD58C";
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+            }
+            // 同心圆环
+            for (let r = 35; r < FAN_RADIUS; r += 28) {
+                ctx.beginPath();
+                ctx.arc(CENTER_X, CENTER_Y, r, 0, Math.PI * 2);
+                ctx.strokeStyle = "#FFC285";
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+            }
+            
+            // 中心圆盖 + 可爱表情 (儿童最爱)
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, 28, 0, Math.PI * 2);
+            ctx.fillStyle = "#FFE2A4";
+            ctx.fill();
+            ctx.strokeStyle = "#E6A157";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // 大眼睛
+            ctx.beginPath();
+            ctx.arc(CENTER_X - 12, CENTER_Y - 7, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fill();
+            ctx.fillStyle = "#4A2E1A";
+            ctx.beginPath();
+            ctx.arc(CENTER_X - 13, CENTER_Y - 8, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.arc(CENTER_X - 14.5, CENTER_Y - 9, 1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(CENTER_X + 12, CENTER_Y - 7, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fill();
+            ctx.fillStyle = "#4A2E1A";
+            ctx.beginPath();
+            ctx.arc(CENTER_X + 11, CENTER_Y - 8, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.arc(CENTER_X + 9.5, CENTER_Y - 9, 1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 大笑的嘴巴
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y + 5, 13, 0.05, Math.PI - 0.05);
+            ctx.strokeStyle = "#B95A1A";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // 腮红
+            ctx.beginPath();
+            ctx.ellipse(CENTER_X - 22, CENTER_Y + 2, 5, 3, 0, 0, Math.PI*2);
+            ctx.fillStyle = "#FFAAAA";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(CENTER_X + 22, CENTER_Y + 2, 5, 3, 0, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 额外装饰小星星和吹风特效 (儿童氛围)
+        function drawWindEffect(isRunning) {
+            if (!isRunning) return;
+            // 随机飘动小风线 (用随机线条增加活泼感)
+            ctx.save();
+            const now = Date.now() / 300;
+            for (let i = 0; i < 6; i++) {
+                const offsetX = Math.sin(now + i) * 4;
+                const offsetY = Math.cos(now * 0.9 + i) * 3;
+                const startX = CENTER_X + 45 + offsetX + (i * 7);
+                const startY = CENTER_Y - 20 + offsetY + (i % 3) * 12;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(startX + 18 + Math.sin(now+i)*5, startY - 8 + Math.cos(now+i)*4);
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = `rgba(100, 200, 255, ${0.5 + Math.sin(now+i)*0.2})`;
+                ctx.stroke();
+                // 小螺旋
+                ctx.beginPath();
+                ctx.moveTo(startX+5, startY-2);
+                ctx.lineTo(startX+12, startY-10);
+                ctx.stroke();
+            }
+            // 飘浮小花朵点点
+            for (let i=0;i<5;i++) {
+                let angle = now*2 + i;
+                let x = CENTER_X + 70 + Math.sin(angle)*12;
+                let y = CENTER_Y - 30 + Math.cos(angle*1.3)*8;
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, Math.PI*2);
+                ctx.fillStyle = `#FFB7C5`;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+        
+        // 绘制风速提示光晕
+        function drawSpeedGlow(speedVal, isFanOn) {
+            if (!isFanOn) return;
+            // 根据速度画外围光晕 (儿童喜欢炫光)
+            ctx.save();
+            const intensity = (speedVal - 1) / 9; // 0~1
+            const radius = FAN_RADIUS + 4 + intensity * 12;
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, radius, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(255, 220, 120, ${0.1 + intensity * 0.25})`;
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // 主绘图函数，根据当前角度绘制完整风扇
+        function drawFan(angleDeg, isRunning, speedVal) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 1. 可爱天空背景 (草地/云)
+            ctx.fillStyle = "#FFF5E6";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // 画云朵
+            ctx.fillStyle = "#FFFFFFE0";
+            ctx.beginPath();
+            ctx.ellipse(80, 70, 35, 28, 0, 0, Math.PI*2);
+            ctx.ellipse(120, 55, 40, 32, 0, 0, Math.PI*2);
+            ctx.ellipse(160, 70, 30, 28, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(500, 85, 40, 30, 0, 0, Math.PI*2);
+            ctx.ellipse(540, 70, 35, 28, 0, 0, Math.PI*2);
+            ctx.ellipse(475, 70, 32, 28, 0, 0, Math.PI*2);
+            ctx.fill();
+            
+            // 草地
+            ctx.fillStyle = "#B5E3A0";
+            ctx.fillRect(0, 400, canvas.width, 100);
+            ctx.fillStyle = "#A2D47A";
+            for(let i=0;i<12;i++) {
+                ctx.beginPath();
+                ctx.moveTo(20+i*50, 400);
+                ctx.lineTo(40+i*50, 375);
+                ctx.lineTo(60+i*50, 400);
+                ctx.fill();
+            }
+            
+            // 2. 风扇底座
+            drawBase();
+            
+            // 3. 绘制三个叶片 (基于当前角度)
+            for (let i = 0; i < 3; i++) {
+                drawBlade(angleDeg, i);
+            }
+            
+            // 4. 网罩 + 中央可爱表情
+            drawFanCageAndFace();
+            
+            // 5. 动态光效和吹风效果
+            drawSpeedGlow(speedVal, isRunning);
+            drawWindEffect(isRunning);
+            
+            // 额外装饰 小彩虹小点
+            ctx.fillStyle = "#FFC2A1";
+            ctx.beginPath();
+            ctx.arc(520, 400, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#FFE0A3";
+            ctx.beginPath();
+            ctx.arc(80, 420, 15, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        // 动画循环: 更新角度并重绘
+        let lastTimestamp = 0;
+        function animate() {
+            if (isOn) {
+                // 实时获取当前速度对应的增量 (支持滑块即时生效)
+                const delta = getDeltaAngle(currentSpeed);
+                currentAngle = (currentAngle + delta) % 360;
+            }
+            // 重绘图画 (传入开关状态、当前角度和速度值用来做光晕效果)
+            drawFan(currentAngle, isOn, currentSpeed);
+            // 继续动画循环
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        
+        // 启动动画
+        function startAnimation() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        
+        // 初始绘制一次
+        drawFan(0, false, 3);
+        startAnimation();
+        
+        // 窗口尺寸自适应保留canvas清晰度
+        function handleCanvasSize() {
+            // 只是确保显示比例不变，canvas绘制尺寸固定600*500，css自适应即可
+        }
+        window.addEventListener('resize', handleCanvasSize);
+        // 增加额外彩蛋: 点击canvas时如果风扇开着会有“呼呼”心理暗示，但不影响功能
+        canvas.addEventListener('click', () => {
+            if(isOn) {
+                // 视觉小反馈，不做大改动，儿童喜欢闪烁提示 (临时改变一下描边)
+                const tmp = ctx.strokeStyle;
+                ctx.save();
+                ctx.restore();
+            }
+        });
+        
+        // 防止滑块触摸时页面滚动
+        speedSlider.addEventListener('touchstart', (e) => { e.stopPropagation(); });
+    })();
+</script>
+</body>
+</html>
